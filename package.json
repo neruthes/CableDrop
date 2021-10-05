@@ -1,9 +1,10 @@
 {
   "dependencies": {
+    "request": "^2.88.2"
   },
   "name": "cabledrop",
   "description": "",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "index.js",
   "bin": {
     "cabledrop": "src/cabledrop",

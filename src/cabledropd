@@ -23,7 +23,7 @@ http.createServer(function (req, res) {
     const dropUrl = `http://[${remoteipaddr}]:${req.headers.beaconport}/${req.headers.beaconpath}`;
     const srcFileName = req.headers.beaconpath.split('/').reverse()[0].replace(/\.\./g, '_');
     console.log(`Incoming drop session: ${dropUrl}`);
-    
+
     // Create dialog now
     exec(`zenity --question \
         --text 'CableDrop Incoming File:\\nDo you want to accept file\\n'${srcFileName}'\\nfrom\\n${req.headers.senderhostname} (${remoteipaddr})' \
@@ -41,7 +41,6 @@ http.createServer(function (req, res) {
             res.end('DENIED');
         };
     });
-    
 }).listen(4592);
 
 const SystemHostname = execSync('hostname').toString().trim();
