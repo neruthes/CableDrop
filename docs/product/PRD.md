@@ -39,13 +39,7 @@ This software contains 2 programs:
 
 CLI frontend. Sender.
 
-<!--
-### cabledropsd
-
-Backend daemon (port 4572). Sender.
-
-This program maintains the list of receivers in the local network.
--->
+This program will spawn a HTTP server daemon.
 
 ### cabledropd
 
