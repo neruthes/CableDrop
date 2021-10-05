@@ -40,7 +40,7 @@ fi
 
 ### Let the file begin
 
-if [[ -e $(uuid) ]]; then
+if [[ -e $(which uuid) ]]; then
     SESSIONID="$(uuid)"
 else
     SESSIONID="$(uuidgen)"
