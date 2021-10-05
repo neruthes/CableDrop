@@ -1,0 +1,86 @@
+#!/bin/bash
+
+#
+# cabledrop
+#
+# This program is part of "CableDrop" software.
+# Copyright (c) 2021 Neruthes.
+# Released under "GNU AGPL 3.0" license.
+#
+
+### Default config
+HTTP_SERVER_PORT="4579"
+### Actual config
+if [[ -e /etc/cabledrop.conf ]]; then
+    source /etc/cabledrop.conf
+fi
+
+PROGVER="0.1.0-rc1"
+
+function _help() {
+    echo 'cabledrop'
+    echo "Version $PROGVER"
+    echo 'This program is part of "CableDrop" software.'
+    echo 'Copyright (c) 2021 Neruthes.'
+    echo 'Released under "GNU AGPL 3.0" license.'
+    echo ''
+    echo 'Synopsis:'
+    echo '    cabledrop file.img                Send a file by filename'
+    echo '    cat file.img | cabledrop -s       Send a file from stdin'
+    echo '    cabledrop                         Show this help message'
+    echo ''
+    # echo ''
+}
+
+if [[ -z "$1" ]]; then
+    _help
+    exit 0
+fi
+
+
+### Let the file begin
+
+SESSIONID="$(uuidgen)"
+FILEDIR="/tmp/.cabledrop/$USER.$SESSIONID/"
+mkdir -p /tmp/.cabledrop
+chmod 755 /tmp/.cabledrop
+mkdir -p $FILEDIR
+chmod 755 $FILEDIR
+if [[ "$1" == "-s" ]]; then
+    ### Read file from stdin
+    FileName="stdin"
+    cat /dev/stdin > $FILEDIR/stdin
+else
+    ### Use a file path
+    FilePathSrc="$(realpath $1)"
+    if [[ ! -f "$FilePathSrc" ]]; then
+        echo "[ERROR] File does not exist or is not a regular file!"
+    fi
+    FileName="$(basename $1)"
+    ln -sf "$FilePathSrc" "$FILEDIR/$FileName"
+fi
+chmod 755 $FILEDIR/* 2>/dev/null
+
+### ===============================================================
+### Establish HTTP server if no one is already running at port HTTP_SERVER_PORT (default 4579)
+### ===============================================================
+if [[ "$(ss -tulwn | grep LISTEN | grep ":$HTTP_SERVER_PORT ")" == "" ]]; then
+    echo "Port 4579 is free; starting HTTP server"
+    case $HTTP_SERVER_TYPE in
+        python2 )
+            daemonize -c /tmp/.cabledrop -- $(which python) -m SimpleHTTPServer "$HTTP_SERVER_PORT"
+            ;;
+        python3 | * )
+            ### Default server type is Python 3
+            daemonize -c /tmp/.cabledrop -- $(which python3) -m http.server "$HTTP_SERVER_PORT"
+            ;;
+    esac
+fi
+
+### ===============================================================
+### Get the hosts list cache file
+### ===============================================================
+HOSTS_LIST_FILE="/tmp/.cabledrop.$USER.hosts-list-cache"
+touch $HOSTS_LIST_FILE
+daemonize -o $HOSTS_LIST_FILE -- $(which avahi-browse) -lkpt _cablrdrop._tcp
+# cat $HOSTS_LIST_FILE

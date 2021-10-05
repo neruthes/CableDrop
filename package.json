@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "mdns": "^2.7.2"
+  },
+  "name": "cabledrop",
+  "description": "",
+  "version": "0.1.0",
+  "main": "index.js",
+  "bin": {
+      "cabledrop": "src/cabledrop",
+      "cabledroprd": "src/cabledropd"
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo NO_TESTS"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neruthes/CableDrop.git"
+  },
+  "author": "Neruthes",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/neruthes/CableDrop/issues"
+  },
+  "homepage": "https://github.com/neruthes/CableDrop#readme"
+}
