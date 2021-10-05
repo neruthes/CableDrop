@@ -1,7 +1,5 @@
 {
   "dependencies": {
-    "mdns": "^2.7.2",
-    "node-gtk": "^0.10.0"
   },
   "name": "cabledrop",
   "description": "",
