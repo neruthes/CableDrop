@@ -40,7 +40,11 @@ fi
 
 ### Let the file begin
 
-SESSIONID="$(uuidgen)"
+if [[ -e $(uuid) ]]; then
+    SESSIONID="$(uuid)"
+else
+    SESSIONID="$(uuidgen)"
+fi
 FILEDIR="/tmp/.cabledrop/$USER.$SESSIONID/"
 mkdir -p /tmp/.cabledrop
 chmod 755 /tmp/.cabledrop
