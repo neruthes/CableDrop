@@ -1,16 +1,23 @@
 # CableDrop Product Requirement Product
 
+
+
+
+
 ## Abstract
 
 AirDrop has become a very successful feature on Mac OS X and iOS.
 
 CableDrop is designed to serve similar features on GNU/Linux.
 
+
+
+
 ## Scenario
 
 Alice would like to drop a file to Bob, who resides within the same LAN.
 
-Both parties have `cabledropd` running as a service, listening on port `4571`.
+Both parties have `cabledropd` running as a service, listening on port `4592`.
 
 The file being shared may be given from stdin or from filename.
 
@@ -18,27 +25,31 @@ Alice selects the file, then selects Bob.
 
 The file is then securely transferred.
 
+
+
+
 ## Components
 
-This software contains 3 programs:
+This software contains 2 programs:
 
 - `cabledrop`
-- `cabledropsd`
-- `cabledroprd`
+- `cabledropd`
 
 ### cabledrop
 
 CLI frontend. Sender.
 
+<!--
 ### cabledropsd
 
 Backend daemon (port 4572). Sender.
 
 This program maintains the list of receivers in the local network.
+-->
 
-### cabledroprd
+### cabledropd
 
-Desktop daemon (port 4571). Receiver.
+Desktop daemon (port 4592, HTTP). Receiver.
 
 This program advertises this host to the local network.
 
@@ -62,7 +73,7 @@ The file is written (if stdin) or symlinked (if filename) into `/tmp/cabledrop-a
 
 A pre-established HTTP server should be serving the file at `http://127.0.0.1:4579/0626a519-c19f-45b9-afcc-47e97dac3359/img.png`, where the port number may vary. If daemon is not running, the program shall immediately start a temporary HTTP server.
 
-The program sends the URL to `192.168.1.77:4571`.
+The program sends the URL to `192.168.1.77:4592`.
 
 # Files
 

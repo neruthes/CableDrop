@@ -77,10 +77,50 @@ if [[ "$(ss -tulwn | grep LISTEN | grep ":$HTTP_SERVER_PORT ")" == "" ]]; then
     esac
 fi
 
-### ===============================================================
-### Get the hosts list cache file
-### ===============================================================
-HOSTS_LIST_FILE="/tmp/.cabledrop.$USER.hosts-list-cache"
-touch $HOSTS_LIST_FILE
-daemonize -o $HOSTS_LIST_FILE -- $(which avahi-browse) -lkpt _cablrdrop._tcp
-# cat $HOSTS_LIST_FILE
+### Get the list of peers
+echo "Gathering list of peers..."
+RAWPEERLIST="$(avahi-browse -krvpt _cablrdrop._tcp | grep '=' | grep IPv4 | sed 's/.*_tcp;//g' | sed 's/;4592;//g' | sed 's/\w*;//')"
+PEERLIST=""
+
+ITR=1
+for PEERINFO in $RAWPEERLIST; do
+    echo "$ITR    ${PEERINFO/;/    }"
+    ITR=$((ITR+1))
+    PEERLIST="$PEERLIST$(echo $PEERINFO | sed 's/.*;//') "
+done
+LISTLENGTH=ITR
+
+### Select a peer
+echo ""
+echo "Select a target by entering its index"
+printf "> "
+SELECTED_RECIPIENT_INDEX="1"
+read SELECTED_RECIPIENT_INDEX
+
+if [[ $SELECTED_RECIPIENT_INDEX -gt $LISTLENGTH ]] || [[ $SELECTED_RECIPIENT_INDEX -lt 1 ]]; then
+    echo "[ERROR] SELECTED_RECIPIENT_INDEX must be within 1 to $LISTLENGTH"
+fi
+
+SELECTED_RECIPIENT=""
+ITR=1
+for TARGET in $PEERLIST; do
+    if [[ $ITR == $SELECTED_RECIPIENT_INDEX ]]; then
+        SELECTED_RECIPIENT=$TARGET
+    fi
+    ITR=$((ITR+1))
+done
+echo "Sending file to $SELECTED_RECIPIENT"
+
+
+### Send to the selected peer
+SERVER_RES=$(curl \
+    -H "SenderHostname: $HOSTNAME" \
+    -H "BeaconPort: $HTTP_SERVER_PORT" \
+    -H "BeaconPath: $USER.$SESSIONID/$FileName" \
+    http://$SELECTED_RECIPIENT:4592/_api/v1/beacon 2>/dev/null)
+if [[ "$SERVER_RES" == "ACCEPTED" ]]; then
+    echo "The recipient has received the file."
+fi
+if [[ "$SERVER_RES" == "DENIED" ]]; then
+    echo "The recipient has denied the transfer."
+fi

@@ -1,3 +1,51 @@
 #!/usr/bin/node
 
+console.log(`Starting cabledropd\n`);
+
+const { execSync, exec } = require('child_process');
+const os = require('os');
+const fs = require('fs');
 const http = require('http');
+const request = require('request');
+
+let dldDirname = 'DLD/Latest'
+if (fs.existsSync(`${os.homedir()}/Downloads`)) {
+    dldDirname = 'Downloads';
+} else {
+    console.log(`Cannot find '${os.homedir()}/Downloads'; defaulting to ~/DLD/Latest`);
+};
+const dldDirPath = `${os.homedir()}/${dldDirname}/cabledrop`;
+fs.mkdirSync(dldDirPath, {recursive: true});
+
+http.createServer(function (req, res) {
+    const remoteipaddr = res.socket.remoteAddress;
+    const saferemoteipaddr = remoteipaddr.replace(/[^\w\d]/g, '.').replace(/^\.*/, '');
+    const dropUrl = `http://[${remoteipaddr}]:${req.headers.beaconport}/${req.headers.beaconpath}`;
+    const srcFileName = req.headers.beaconpath.split('/').reverse()[0].replace(/\.\./g, '_');
+    console.log(`Incoming drop session: ${dropUrl}`);
+    
+    // Create dialog now
+    exec(`zenity --question \
+        --text 'CableDrop Incoming File:\\nDo you want to accept file\\n'${srcFileName}'\\nfrom\\n${req.headers.senderhostname} (${remoteipaddr})' \
+        --title 'CableDrop Incoming File' --ok-label Accept --cancel-label Deny --width 600 --height 300`,
+    function (err, stdout, stderr) {
+        if (!err) {
+            // Save file
+            fs.mkdirSync(`${dldDirPath}/${saferemoteipaddr}`, { recursive: true });
+            const downloadFilePath = `${dldDirPath}/${saferemoteipaddr}/${srcFileName}`;
+            console.log(`Saving file to ${downloadFilePath}`);
+            request(dropUrl).pipe(fs.createWriteStream(downloadFilePath));
+            res.end('ACCEPTED');
+        } else {
+            // Ignore session
+            res.end('DENIED');
+        };
+    });
+    
+}).listen(4592);
+
+const SystemHostname = execSync('hostname').toString().trim();
+console.log(`SystemHostname=${SystemHostname}`);
+console.log(`avahi-publish -s ${SystemHostname} _cablrdrop._tcp 4592`);
+exec(`avahi-publish -s ${SystemHostname} _cablrdrop._tcp 4592`, function () {});
+console.log(`Advertising service using Avahi`);

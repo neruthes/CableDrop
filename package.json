@@ -1,19 +1,19 @@
 {
   "dependencies": {
-    "mdns": "^2.7.2"
+    "mdns": "^2.7.2",
+    "node-gtk": "^0.10.0"
   },
   "name": "cabledrop",
   "description": "",
   "version": "0.1.0",
   "main": "index.js",
   "bin": {
-      "cabledrop": "src/cabledrop",
-      "cabledroprd": "src/cabledropd"
+    "cabledrop": "src/cabledrop",
+    "cabledropd": "src/cabledropd"
   },
   "directories": {
     "doc": "docs"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo NO_TESTS"
   },
